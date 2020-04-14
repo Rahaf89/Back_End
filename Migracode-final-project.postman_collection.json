@@ -67,5 +67,42 @@
 	"protocolProfileBehavior": {}
 }
 
+{
+	"info": {
+		"_postman_id": "4ddf6fcb-c553-48fb-b255-a5d21007d215",
+		"name": "migracode-get-search",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "get-search",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/services?text=u:eduard h:dogs h:vacations u:ward",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"services"
+					],
+					"query": [
+						{
+							"key": "text",
+							"value": "u:eduard h:dogs h:vacations u:ward"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}
+
+
 
 

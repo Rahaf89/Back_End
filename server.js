@@ -87,14 +87,15 @@ app.post('/reg', function(req,res){
     const username= req.body.name;
     const email = req.body.email;
 	const password = req.body.password;
+	const points = 20;
 
 	pool.query("SELECT * FROM users WHERE email = $1", [email])
 	    .then(result => {
 	      if (result.rows.length > 0) {
 	    	return res.status(400)
 				      .send("A user with the same email already exists!");
-		    }else{ const query = "INSERT INTO users (name,email,password) VALUES ($1,$2,$3)" ;
-			       const params = [username,email,password];
+		    }else{ const query = "INSERT INTO users (name,email,password,points) VALUES ($1,$2,$3,$4)" ;
+			       const params = [username,email,password,points];
 	pool
 	.query(query, params)
 	.then(() => res.send("Signup Success"))
@@ -132,6 +133,7 @@ app.post('/reg', function(req,res){
 
 	app.get('/services', function (request, response) {
 		const text = request.query.text;
+	    console.log(text);
 		// text = u:eduard h:dogs h:vacations u:ward u:housni
 		// 1 - separate each word and put it in an array
 		var words = text.split(' '); // words = ['u:eduard' 'h:dogs' 'h:vacations' 'u:ward' 'u:housni']
