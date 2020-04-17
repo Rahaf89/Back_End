@@ -134,31 +134,21 @@ app.post('/reg', function(req,res){
 	app.get('/services', function (request, response) {
 		const text = request.query.text;
 	    console.log(text);
-		// text = u:eduard h:dogs h:vacations u:ward u:housni
-		// 1 - separate each word and put it in an array
-		var words = text.split(' '); // words = ['u:eduard' 'h:dogs' 'h:vacations' 'u:ward' 'u:housni']
-
-		// 2 - determine which ones are hastags and which ones are user names
+		var words = text.split(' '); 
 		var hashtags = words // hashtags = ['dogs' 'vacations']
-			.filter((word, index) => word.startsWith(''))
+			.filter((word, index) => word.startsWith('h:'))
 			.map(word => word.replace('h:',''));h:
 		var users = words // users = ['eduard' 'ward' 'housni'] 
 			.filter((word, index) => word.startsWith('u:'))
 			.map(word => word.replace('u:', ''));
-		// 3 - put them in our query
-		// SELECT + JOIN
 
-		var query = `SELECT s.*, h.text, pro.name as pro from services s
-		join users pro on pro.id=s.provider_id 
-		join service_tags  t on t.service_id = s.id 
-		join hashtags h on h.id=t.hashtag_id 
-	union 
-	SELECT s.*, h.text, rec.name as rec from services s
-		join users rec on rec.id=s.receiver_id
-		join service_tags  t on t.service_id = s.id 
+		var query = `SELECT s.*, h.text, providers.name as pro, receivers.name as rec 
+		from services s
+		join users receivers on receivers.id=s.receiver_id
+		join users providers on providers.id=s.provider_id
+		join service_tags  t on t.service_id = s.id
 		join hashtags h on h.id=t.hashtag_id `;
 		
-
 		//const hashtagPlaceholders = hashtags.map ((h, index) => `$${index + 1}`).join(',')
 		function hashtagPlaceholders(hashtag) {
 			return `(${hashtags.map((h, i) => `$${i + 1}`).join(",")})`;}
@@ -168,11 +158,14 @@ app.post('/reg', function(req,res){
 			return `(${users.map((users, i) => `$${i+1+offset}`).join(",")})`;}
 		 //const userPlaceholders = users.map((u,i) => `$${i+1+offset}`).join(",");
 
-		 let quyry =` WHERE h.text = ${hashtagPlaceholders(hashtags)} 
-		or pro.name = ${userPlaceholders(users, offset)} `
+		 query +=`WHERE h.text in ${hashtagPlaceholders(hashtags)} 
+		 or receivers.name in ${userPlaceholders(users, hashtags.length)} 
+		 or providers.name in ${userPlaceholders(users, hashtags.length)}`
 
-		pool
-    .query(query)
+		 const values = hashtags.concat(users);
+		
+
+		 pool.query(query, values)
     .then(result => response.json(result.rows))
 	.catch(err => response.status(500).json(err));
 
