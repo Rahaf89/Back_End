@@ -142,15 +142,15 @@ app.post('/reg', function(req,res){
 			.filter((word, index) => word.startsWith('u:'))
 			.map(word => word.replace('u:', ''));
 
-		var query = `SELECT s.*, h.text, providers.name as pro, receivers.name as rec 
+		var query = `SELECT s.*, h.text, providers.name as pro, receivers.name as rec
 		from services s
 		join users receivers on receivers.id=s.receiver_id
 		join users providers on providers.id=s.provider_id
-		join service_tags  t on t.service_id = s.id
+		join service_tags  t on t.service_id = s.id
 		join hashtags h on h.id=t.hashtag_id `;
 		
 		//const hashtagPlaceholders = hashtags.map ((h, index) => `$${index + 1}`).join(',')
-		function hashtagPlaceholders(hashtag) {
+		function hashtagPlaceholders(hashtags) {
 			return `(${hashtags.map((h, i) => `$${i + 1}`).join(",")})`;}
 	
 		 const offset = hashtags.length;
@@ -163,8 +163,6 @@ app.post('/reg', function(req,res){
 		 or providers.name in ${userPlaceholders(users, hashtags.length)}`
 
 		 const values = hashtags.concat(users);
-		
-
 		 pool.query(query, values)
     .then(result => response.json(result.rows))
 	.catch(err => response.status(500).json(err));
