@@ -134,7 +134,7 @@ app.post('/reg', function(req,res){
 	app.get('/services', function (request, response) {
 		const text = request.query.text;
 	    console.log(text);
-		var words = text.split(' '); 
+		var words = text.split(' ').map(word=> word.trim());; 
 		var hashtags = words // hashtags = ['dogs' 'vacations']
 			.filter((word, index) => word.startsWith('h:'))
 			.map(word => word.replace('h:',''));h:
@@ -156,11 +156,14 @@ app.post('/reg', function(req,res){
 		 const offset = hashtags.length;
 		 function userPlaceholders(users, offset = 0) {
 			return `(${users.map((users, i) => `$${i+1+offset}`).join(",")})`;}
-		 //const userPlaceholders = users.map((u,i) => `$${i+1+offset}`).join(",");
-
-		 query +=`WHERE h.text in ${hashtagPlaceholders(hashtags)} 
-		 or receivers.name in ${userPlaceholders(users, hashtags.length)} 
-		 or providers.name in ${userPlaceholders(users, hashtags.length)}`
+			const queryHasHashtags = hashtags.length > 0
+			const queryHasUsers = users.length > 0
+	  
+			const queryPartHashtags = `h.text in ${hashtagPlaceholders(hashtags)}`
+			const queryPartUsers = `receivers.name in ${userPlaceholders(users, hashtags.length)}
+			or providers.name in ${userPlaceholders(users, hashtags.length)}`
+	  
+			query +=`WHERE ${queryHasHashtags ? queryPartHashtags : ''}${queryHasHashtags && queryHasUsers ? ' or ' : ''}${queryHasUsers? queryPartUsers : ''}`
 
 		 const values = hashtags.concat(users);
 		 pool.query(query, values)
