@@ -39,6 +39,28 @@ app.get("/users", (req, res) => {
 	  .catch(err => res.json(err, 404));
   });
 
+  app.get("/users/:userId", function(req, res) { 
+	const userId = req.params.userId;
+	 
+  
+	pool.query("SELECT * FROM users where id = $1", [userId])
+		.then(result => res.json(result.rows))
+		.catch(err => res.status(500).send(err));
+  }); 
+
+  app.put("/users/:userId", function(req, res) { 
+	const userId = req.params.id;
+	const newName = req.body.name; 
+	const newEmail = req.body.email; 
+	const newpassword = req.body.password; 
+  
+	pool.query(
+	  "UPDATE users SET name=$1, email=$2, password=$3 where id = $4", 
+	  [newName, newEmail, newpassword, userId])
+		.then(() => res.send(`user updated!`))
+		.catch(e => console.error(e)); 
+  });
+
 app.post('/users', function(request, response) {
 	const username = request.body.name;
 	const password = request.body.password;
@@ -67,7 +89,7 @@ app.post('/users', function(request, response) {
 
 app.get('/home', function(request, response) {
 	if (request.session.loggedin) {
-		response.send('Welcome back, ' + request.session.username + '!');
+		response.send('Welcome back, ' + request.session.username + '!').redirect('/../tie-in-Front_End/app.js');;
 	} else {
 		response.send('Please login to view this page!');
 	}
