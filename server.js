@@ -35,7 +35,7 @@ app.get('/', function(request, response) {
 app.get("/users", (req, res) => {
 	pool
 	  .query("SELECT * FROM users")
-	  .then(result => res.json(result.rows[0]))
+	  .then(result => res.json(result.rows))
 	  .catch(err => res.json(err, 404));
   });
 
@@ -43,7 +43,7 @@ app.get("/users", (req, res) => {
 	const userId = req.params.userId;
   
 	pool.query("SELECT * FROM users where id = $1", [userId])
-		.then(result => res.json(result.rows))
+		.then(result => res.json(result.rows[0]))
 		.catch(err => res.status(500).send(err));
   }); 
 
