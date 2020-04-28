@@ -35,7 +35,7 @@ app.get('/', function(request, response) {
 app.get("/users", (req, res) => {
 	pool
 	  .query("SELECT * FROM users")
-	  .then(result => res.json(result.rows))
+	  .then(result => res.json(result.rows[0]))
 	  .catch(err => res.json(err, 404));
   });
 
