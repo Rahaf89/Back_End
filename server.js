@@ -63,18 +63,12 @@ app.get("/users", (req, res) => {
 		.catch(e => console.error(e)); 
   });
 
-app.post('/users', function(request, response) {
-	const username = request.body.name;
-	const password = request.body.password;
+app.post('/login', function(request, response) {
+	var username = request.body.username;
+	var password = request.body.password;
 	if (username && password) {
-		pool.query("SELECT * FROM users WHERE name = $1 AND password = $2", [username, password],
-		 function(error, results, fields)
-		  {
-			  console.log(error);
-			  console.log(results);
-			  console.log(fields);
-
-			 if(results.rowCount > 0) {
+		connection.query('SELECT * FROM users WHERE name = ? AND password = ?', [username, password], function(results) {
+			if (results.length > 0) {
 				request.session.loggedin = true;
 				request.session.username = username;
 				response.redirect('/home');
