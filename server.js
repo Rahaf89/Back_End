@@ -107,7 +107,7 @@ app.get("/logout", function (req, res) {
 });
 
 app.get("/reg", function (req, res) {
-  res.sendFile(path.join(__dirname + "/../Front_End/login.html"));
+  res.sendFile(path.join(__dirname + "/../Front_End/Register.js"));
 });
 
 app.post("/reg", function (req, res) {
@@ -128,7 +128,7 @@ app.post("/reg", function (req, res) {
         .then((result) =>
           res.status(200).send("user created")
         )
-        .catch((e) => res.status(500).send(e));
+        .catch((e) => res.status(400).send(e));
     }
   });
 });
@@ -255,8 +255,49 @@ app.get("/services/:receiver_id/content", (req, res) => {
     .catch(err => res.json(err, 500));
 });
 
+app.get("/services/:receiver_Id", (req, res) => {
+  const receiverid = req.params.customerId;
+
+  pool
+    .query("SELECT * from services where receiver_id = $1", [receiverid])
+    .then(result => res.json(result.rows))
+    .catch(err => res.json(err, 500));
+});
 
 
+app.put("/services/:receiver_id", (req, res) => {
+  const receiver_id = req.params.receiver_id;
+  const content= req.body.content;
+  let query =
+    "UPDATE services SET content=$1 where receiver_id= $2";
+
+    const params = [ content, receiver_id ];
+
+    pool
+    .query(query, params)
+    .then(result => res.json('updated!'))
+    .catch(err =>res.status(200).json(err));
+});
+
+app.get("/content", (req, res) => {
+  pool
+    .query("SELECT content FROM services")
+    .then((result) => res.json(result.rows))
+    .catch((err) => res.json(err, 404));
+});
+
+app.post("/content", function (req, res) {
+  const content = req.body.content;
+  
+  const query =
+    "INSERT INTO services (content) VALUES ($1)";
+  const parameters = [content];
+
+  pool
+    .query(query, parameters)
+    .then(result => res.send("content created!"))
+    .catch(err => res.status(200).json(err));
+});
 
 app.listen(5000, function () {
   console.log("Server is listening on port 5000. Ready to accept requests!");
