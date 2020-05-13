@@ -67,11 +67,12 @@ app.put("/users/:userId", function (req, res) {
 });
 
 app.post("/login", function (request, response) {
-  var username = request.body.username;
+  var email = request.body.email;
   var password = request.body.password;
-  if (username && password) {
-    connection
-      .query(`SELECT password, id, name FROM users where email = '${Email}'`)
+  if (email && password) {
+    
+     pool .query(`SELECT password, id, name FROM users where email = $1`,[email])
+
       .then((result) => {
         if (result.rows.length == 0) {
           res.status(404).send(" your email doesn't exists");
