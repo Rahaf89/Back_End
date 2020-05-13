@@ -28,9 +28,6 @@ app.use(express.static("../Front_End/public"));
 
 app.use(cors());
 
-app.get("/", function (request, response) {
-  response.sendFile(path.join(__dirname + "/../Front_End/login.html"));
-});
 
 app.get("/users", (req, res) => {
   pool
@@ -97,25 +94,6 @@ app.post("/login", function (request, res) {
   }
 });
 
-app.get("/home", function (request, response) {
-  if (request.session.loggedin) {
-    response
-      .send("Welcome back, " + request.session.username + "!")
-      .redirect("/../tie-in-Front_End/app.js");
-  } else {
-    response.send("Please login to view this page!");
-  }
-  response.end();
-});
-
-app.get("/logout", function (req, res) {
-  delete req.session.user_id;
-  res.redirect("/login");
-});
-
-app.get("/reg", function (req, res) {
-  res.sendFile(path.join(__dirname + "/../Front_End/Register.js"));
-});
 
 app.post("/reg", function (req, res) {
   const username = req.body.name;
@@ -138,28 +116,6 @@ app.post("/reg", function (req, res) {
   });
 });
 
-/*app.get("/services", (req, res) => {
-	const text = req.query.text;
-	let words = text.split('')
-
-
-	 let query = "SELECT s.*, h.text from services  s "+
-	 "join users u on u.id=s.providerid "+
-	 "join service_tags  t on t.service_id = s.id "+
-	 "join hashtags h on h.id=t.hashtag_id "
-
-	  let params = [];
-
-	  if (text) {
-		params = [`%${text}%`];
-		query += ` where h.text ilike $1`;
-	}
-	pool
-    .query(query, params)
-    .then(result => res.json(result.rows))
-    .catch(err => res.json(err, 500));
-
-});*/
 
 app.get("/services", function (request, response) {
   const text = request.query.text;
@@ -259,26 +215,17 @@ app.get("/services/:receiver_id/content", (req, res) => {
     .catch((err) => res.json(err, 500));
 });
 
-app.get("/services/:receiver_Id", (req, res) => {
-  const receiverid = req.params.customerId;
 
-  pool
-    .query("SELECT * from services where receiver_id = $1", [receiverid])
-    .then((result) => res.json(result.rows))
-    .catch((err) => res.json(err, 500));
-});
-
-app.put("/services/:receiver_id", (req, res) => {
-  const receiver_id = req.params.receiver_id;
-  const content = req.body.content;
-  let query = "UPDATE services SET content=$1 where receiver_id= $2";
-
-  const params = [content, receiver_id];
-
-  pool
-    .query(query, params)
-    .then((result) => res.json("updated!"))
-    .catch((err) => res.status(200).json(err));
+app.get("/content/name", (req, res) => {
+  
+  pool.query (
+  `SELECT content, receivers.name 
+		from services s
+		join users receivers on receivers.id=s.receiver_id ;`)
+  
+  
+    .then(result => res.json(result.rows))
+    .catch(err => res.status(200).json(err));
 });
 
 app.get("/content", (req, res) => {
