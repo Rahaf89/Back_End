@@ -175,12 +175,7 @@ app.post("/services", (req, res) => {
   const end_date = req.body.end_date;
   const review = req.body.review;
   const comment = req.body.comment;
-  pool
-    .query("SELECT * FROM services WHERE content = $1", [newcontent])
-    .then((result) => {
-      if (result.length < 500) {
-        return res.status(400).send("an invalid request");
-      } else {
+  
         const query =
           "insert into services (provider_id,receiver_id,points, content ,state,start_date,end_date,review,comment) Values ($1,$2, $3,$4,$5,$6,$7,$8,$9 )";
         const parameters = [
@@ -199,8 +194,7 @@ app.post("/services", (req, res) => {
           .query(query, parameters)
           .then((result) => res.send("created!"))
           .catch((err) => res.status(500).json(err));
-      }
-    });
+      
 });
 
 app.get("/services/:receiver_id/content", (req, res) => {
