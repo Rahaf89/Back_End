@@ -70,23 +70,29 @@ app.post("/login", function (request, response) {
   var username = request.body.username;
   var password = request.body.password;
   if (username && password) {
-    connection.query(
-      "SELECT * FROM users WHERE name = ? AND password = ?",
-      [username, password],
-      function (results) {
-        if (results.length > 0) {
-          request.session.loggedin = true;
-          request.session.username = username;
-          response.redirect("/home");
+    connection
+      .query(`SELECT password, id, name FROM users where email = '${Email}'`)
+      .then((result) => {
+        if (result.rows.length == 0) {
+          res.status(404).send(" your email doesn't exists");
         } else {
-          response.send("Incorrect Username and/or Password!");
+          const user = result.rows[0];
+
+          console.log("user logging in: ", user);
+
+          const userData = {
+            id: user.id,
+            name: user.name,
+          };
+          console.log(userData);
+         
+          res.json(userData).status(200);
+          
         }
-        response.end();
-      }
-    );
-  } else {
-    response.send("Please enter Username and Password!");
-    response.end();
+      })
+      .catch(function (error) {
+        res.status(500).send(error, "Refresh your page");
+      });
   }
 });
 
@@ -125,9 +131,7 @@ app.post("/reg", function (req, res) {
       const params = [username, email, password, points];
       pool
         .query(query, params)
-        .then((result) =>
-          res.status(200).send("user created")
-        )
+        .then((result) => res.status(200).send("user created"))
         .catch((e) => res.status(400).send(e));
     }
   });
@@ -244,15 +248,14 @@ app.post("/services", (req, res) => {
 
 app.get("/services/:receiver_id/content", (req, res) => {
   const receiver_id = req.params.receiver_id;
-  let query =
-    "select content from services where receiver_id= $1";
+  let query = "select content from services where receiver_id= $1";
 
-    const params = [receiver_id];
+  const params = [receiver_id];
 
-    pool
+  pool
     .query(query, params)
-    .then(result => res.json(result.rows))
-    .catch(err => res.json(err, 500));
+    .then((result) => res.json(result.rows))
+    .catch((err) => res.json(err, 500));
 });
 
 app.get("/services/:receiver_Id", (req, res) => {
@@ -260,23 +263,21 @@ app.get("/services/:receiver_Id", (req, res) => {
 
   pool
     .query("SELECT * from services where receiver_id = $1", [receiverid])
-    .then(result => res.json(result.rows))
-    .catch(err => res.json(err, 500));
+    .then((result) => res.json(result.rows))
+    .catch((err) => res.json(err, 500));
 });
-
 
 app.put("/services/:receiver_id", (req, res) => {
   const receiver_id = req.params.receiver_id;
-  const content= req.body.content;
-  let query =
-    "UPDATE services SET content=$1 where receiver_id= $2";
+  const content = req.body.content;
+  let query = "UPDATE services SET content=$1 where receiver_id= $2";
 
-    const params = [ content, receiver_id ];
+  const params = [content, receiver_id];
 
-    pool
+  pool
     .query(query, params)
-    .then(result => res.json('updated!'))
-    .catch(err =>res.status(200).json(err));
+    .then((result) => res.json("updated!"))
+    .catch((err) => res.status(200).json(err));
 });
 
 app.get("/content", (req, res) => {
@@ -288,15 +289,14 @@ app.get("/content", (req, res) => {
 
 app.post("/content", function (req, res) {
   const content = req.body.content;
-  
-  const query =
-    "INSERT INTO services (content) VALUES ($1)";
+
+  const query = "INSERT INTO services (content) VALUES ($1)";
   const parameters = [content];
 
   pool
     .query(query, parameters)
-    .then(result => res.send("content created!"))
-    .catch(err => res.status(200).json(err));
+    .then((result) => res.send("content created!"))
+    .catch((err) => res.status(200).json(err));
 });
 
 app.listen(5000, function () {
