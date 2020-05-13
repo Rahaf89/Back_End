@@ -66,7 +66,7 @@ app.put("/users/:userId", function (req, res) {
     .catch((e) => console.error(e));
 });
 
-app.post("/login", function (request, response) {
+app.post("/login", function (request, res) {
   var email = request.body.email;
   var password = request.body.password;
   if (email && password) {
