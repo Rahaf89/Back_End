@@ -178,7 +178,7 @@ app.post("/services", (req, res) => {
   pool
     .query("SELECT * FROM services WHERE content = $1", [newcontent])
     .then((result) => {
-      if (result.rows.length > 150) {
+      if (result.length < 500) {
         return res.status(400).send("an invalid request");
       } else {
         const query =
