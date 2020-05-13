@@ -178,7 +178,7 @@ app.post("/services", (req, res) => {
   pool
     .query("SELECT * FROM services WHERE content = $1", [newcontent])
     .then((result) => {
-      if (result.rows.length < 150) {
+      if (result.rows.length > 150) {
         return res.status(400).send("an invalid request");
       } else {
         const query =
@@ -192,13 +192,13 @@ app.post("/services", (req, res) => {
           start_date,
           end_date,
           review,
-          comment,
+          comment
         ];
 
         pool
           .query(query, parameters)
-          .then((res) => res.send("request created!"))
-          .catch((err) => res.json(err, 500));
+          .then((result) => res.send("created!"))
+          .catch((err) => res.status(500).json(err));
       }
     });
 });
