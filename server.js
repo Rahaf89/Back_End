@@ -213,7 +213,7 @@ app.get("/services/:receiver_id/content", (req, res) => {
 app.get("/content/name", (req, res) => {
   
   pool.query (
-  `SELECT content, receivers.name 
+  `SELECT content,email, receivers.name 
 		from services s
 		join users receivers on receivers.id=s.receiver_id ;`)
   
