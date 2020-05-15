@@ -241,6 +241,20 @@ app.post("/content", function (req, res) {
     .catch((err) => res.status(200).json(err));
 });
 
+app.put("/services/:receiver_id/content", function (req, res) {
+  const receiverid=req.params.receiver_id;
+  const newcontent = req.body.content;
+  pool
+    .query(
+      `
+      update services set content = $1  where receiver_id = $2
+		`,
+      [newcontent, receiverid]
+    )
+    .then(() => res.send(`request updated!`))
+    .catch((e) => console.error(e));
+});
+
 app.listen(5000, function () {
   console.log("Server is listening on port 5000. Ready to accept requests!");
 });
