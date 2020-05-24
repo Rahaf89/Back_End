@@ -116,47 +116,44 @@ app.post("/reg", function (req, res) {
   });
 });
 
+function hashtagPlaceholders(hashtags) {
+  return "(" + hashtags.map((h, i) => `$${i + 1}`).join(",") + ")";
+}
+
+function userPlaceholders(users, offset = 0) {
+  return users.map((u, i) => `(prov.name = $${i + 1 + offset} OR rec.name = $${i + 1 + offset})`);
+}
 
 app.get("/services", function (request, response) {
   const text = request.query.text;
-  console.log(text);
+
   var words = text.split(" ").map((word) => word.trim());
   var hashtags = words // hashtags = ['dogs' 'vacations']
     .filter((word, index) => word.startsWith("h:"))
     .map((word) => word.replace("h:", ""));
-  h: var users = words // users = ['eduard' 'ward' 'housni']
+  var users = words // users = ['eduard' 'ward' 'housni']
     .filter((word, index) => word.startsWith("u:"))
     .map((word) => word.replace("u:", ""));
 
-  var query = `SELECT s.*, h.text, providers.name as pro, receivers.name as rec
-		from services s
-		join users receivers on receivers.id=s.receiver_id
-		join users providers on providers.id=s.provider_id
-		join service_tags  t on t.service_id = s.id
-		join hashtags h on h.id=t.hashtag_id `;
+  var query = `SELECT DISTINCT s.*,prov.name AS prov, rec.name AS rec
+		FROM services s
+		JOIN users rec ON rec.id=s.receiver_id
+		JOIN users prov ON prov.id=s.provider_id
+		JOIN service_tags t ON t.service_id = s.id
+		JOIN hashtags h ON h.id=t.hashtag_id`;
 
-  //const hashtagPlaceholders = hashtags.map ((h, index) => `$${index + 1}`).join(',')
-  function hashtagPlaceholders(hashtags) {
-    return `(${hashtags.map((h, i) => `$${i + 1}`).join(",")})`;
+  let predicates = [];
+  if (hashtags.length > 0) {
+    predicates = predicates.concat(`h.text in ${hashtagPlaceholders(hashtags)}`);
+  }
+  if (users.length > 0) {
+    predicates = predicates.concat(userPlaceholders(users, hashtags.length));
   }
 
-  const offset = hashtags.length;
-  function userPlaceholders(users, offset = 0) {
-    return `(${users.map((users, i) => `$${i + 1 + offset}`).join(",")})`;
+  if (predicates.length > 0) {
+    query += " WHERE " + predicates.join(" AND ");
   }
-  const queryHasHashtags = hashtags.length > 0;
-  const queryHasUsers = users.length > 0;
-
-  const queryPartHashtags = `h.text in ${hashtagPlaceholders(hashtags)}`;
-  const queryPartUsers = `receivers.name in ${userPlaceholders(
-    users,
-    hashtags.length
-  )}
-			or providers.name in ${userPlaceholders(users, hashtags.length)}`;
-
-  query += `WHERE ${queryHasHashtags ? queryPartHashtags : ""}${
-    queryHasHashtags && queryHasUsers ? " or " : ""
-  }${queryHasUsers ? queryPartUsers : ""}`;
+  console.log(query);
 
   const values = hashtags.concat(users);
   pool
